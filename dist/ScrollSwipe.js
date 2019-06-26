@@ -102,8 +102,11 @@ ScrollSwipe.prototype.listen = function listen() {
 ScrollSwipe.prototype.onWheel = function onWheel(e) {
   var _this2 = this;
 
-  if (this.scrollPreventDefault) {
+  if (this.scrollPreventDefault && eventIsCancelable(e)) {
+    console.warn('canceled event');
     e.preventDefault();
+  } else {
+    console.warn('event is not cancelable');
   }
 
   if (this.scrollPending) {
@@ -142,15 +145,18 @@ ScrollSwipe.prototype.initScroll = function initScroll() {
   this.newOnWheel = this.onWheel.bind(this);
 
   if (this.target && this.target.addEventListener) {
-    this.target.addEventListener('wheel', this.newOnWheel, false);
+    this.target.addEventListener('wheel', this.newOnWheel, { passive: true });
   }
 
   return this;
 };
 
 ScrollSwipe.prototype.touchMove = function touchMove(e) {
-  if (this.touchPreventDefault) {
+  if (this.touchPreventDefault && eventIsCancelable(e)) {
+    console.warn('canceled event');
     e.preventDefault();
+  } else {
+    console.warn('event is not cancelable');
   }
 
   var changedTouches = e.changedTouches[0];
@@ -201,7 +207,7 @@ ScrollSwipe.prototype.initTouch = function initTouch() {
   this.newTouchMove = this.touchMove.bind(this);
   this.newTouchEnd = this.touchEnd.bind(this);
 
-  this.target.addEventListener('touchmove', this.newTouchMove, false);
+  this.target.addEventListener('touchmove', this.newTouchMove, { passive: true });
   this.target.addEventListener('touchend', this.newTouchEnd, false);
 
   return this;
@@ -455,6 +461,10 @@ function swap(intent, direction) {
   this.currentIntent = intent;
   this.previousDirection = this.currentDirection;
   this.currentDirection = direction;
+}
+
+function eventIsCancelable(event) {
+  return typeof event.cancelable !== 'boolean' || event.cancelable;
 }
 return ScrollSwipe;
 }));
