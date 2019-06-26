@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 interface OriEvent extends CustomEvent {
   path: HTMLElement[]
 }
@@ -63,7 +62,7 @@ export interface Options {
  * Swipe handler to listen for swipes and scroll events.
  * @see https://github.com/cmswalker/scroll-swipe/
  */
-class ScrollSwipe {
+declare class ScrollSwipe {
   constructor(opts: Options)
 
   /**
