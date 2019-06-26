@@ -11,11 +11,15 @@
 
 var VERTICAL = 'VERTICAL';
 var HORIZONTAL = 'HORIZONTAL';
+var PIXEL_STEP = 10;
+var LINE_HEIGHT = 40;
+var PAGE_HEIGHT = 800;
 
 var acceptedParams = {
   target: 1,
   scrollSensitivity: 1,
   touchSensitivity: 1,
+  trackPadSensitivity: 0.2,
   scrollCb: 1,
   touchCb: 1,
   scrollPreventDefault: 1,
@@ -48,6 +52,10 @@ function ScrollSwipe(opts) {
 
   if (!this.touchSensitivity || this.touchSensitivity < 0) {
     this.touchSensitivity = 0;
+  }
+
+  if (!this.trackPadSensitivity || this.trackPadSensitivity < 0) {
+    this.trackPadSensitivity = 0;
   }
 
   if (this.target.style || this.target.style.touchAction === '') {
@@ -103,10 +111,7 @@ ScrollSwipe.prototype.onWheel = function onWheel(e) {
   var _this2 = this;
 
   if (this.scrollPreventDefault && eventIsCancelable(e)) {
-    console.warn('canceled event');
     e.preventDefault();
-  } else {
-    console.warn('event is not cancelable');
   }
 
   if (this.scrollPending) {
@@ -115,11 +120,19 @@ ScrollSwipe.prototype.onWheel = function onWheel(e) {
 
   this.startScrollEvent = e;
 
-  var x = e.deltaX;
-  var y = e.deltaY;
+  var _normalizeWheel = normalizeWheel(e),
+      spinY = _normalizeWheel.spinY,
+      spinX = _normalizeWheel.spinX,
+      pixelY = _normalizeWheel.pixelY,
+      pixelX = _normalizeWheel.pixelX;
 
-  this.addXScroll(x);
-  this.addYScroll(y);
+  if (spinX === 0 || Math.abs(spinX) > this.trackPadSensitivity) {
+    this.addXScroll(pixelX);
+  }
+
+  if (spinY === 0 || Math.abs(spinY) > this.trackPadSensitivity) {
+    this.addYScroll(pixelY);
+  }
 
   this.scrollFulfilled(function (fulfilled, direction, intent) {
     if (!fulfilled) {
@@ -153,10 +166,7 @@ ScrollSwipe.prototype.initScroll = function initScroll() {
 
 ScrollSwipe.prototype.touchMove = function touchMove(e) {
   if (this.touchPreventDefault && eventIsCancelable(e)) {
-    console.warn('canceled event');
     e.preventDefault();
-  } else {
-    console.warn('event is not cancelable');
   }
 
   var changedTouches = e.changedTouches[0];
@@ -465,6 +475,77 @@ function swap(intent, direction) {
 
 function eventIsCancelable(event) {
   return typeof event.cancelable !== 'boolean' || event.cancelable;
+}
+
+// https://gist.github.com/akella/11574989a9f3cc9e0ad47e401c12ccaf
+function normalizeWheel(event) {
+  var sX = 0,
+      sY = 0,
+      // spinX, spinY
+  pX = 0,
+      pY = 0; // pixelX, pixelY
+
+  // Legacy
+  if ('detail' in event) {
+    sY = event.detail;
+  }
+
+  if ('wheelDelta' in event) {
+    sY = -event.wheelDelta / 120;
+  }
+
+  if ('wheelDeltaY' in event) {
+    sY = -event.wheelDeltaY / 120;
+  }
+
+  if ('wheelDeltaX' in event) {
+    sX = -event.wheelDeltaX / 120;
+  }
+
+  // side scrolling on FF with DOMMouseScroll
+  if ('axis' in event && event.axis === event.HORIZONTAL_AXIS) {
+    sX = sY;
+    sY = 0;
+  }
+
+  pX = sX * PIXEL_STEP;
+  pY = sY * PIXEL_STEP;
+
+  if ('deltaY' in event) {
+    pY = event.deltaY;
+  }
+
+  if ('deltaX' in event) {
+    pX = event.deltaX;
+  }
+
+  if ((pX || pY) && event.deltaMode) {
+    if (event.deltaMode == 1) {
+      // delta in LINE units
+      pX *= LINE_HEIGHT;
+      pY *= LINE_HEIGHT;
+    } else {
+      // delta in PAGE units
+      pX *= PAGE_HEIGHT;
+      pY *= PAGE_HEIGHT;
+    }
+  }
+
+  // Fall-back if spin cannot be determined
+  if (pX && !sX) {
+    sX = pX < 1 ? -1 : 1;
+  }
+
+  if (pY && !sY) {
+    sY = pY < 1 ? -1 : 1;
+  }
+
+  return {
+    spinX: sX,
+    spinY: sY,
+    pixelX: pX,
+    pixelY: pY
+  };
 }
 return ScrollSwipe;
 }));
