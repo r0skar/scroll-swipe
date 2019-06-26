@@ -4,12 +4,27 @@ interface OriEvent extends CustomEvent {
   path: HTMLElement[]
 }
 
+export enum SwipeDirection {
+  vertical = 'VERTICAL',
+  horizontal = 'HORIZONTAL'
+}
+
+export enum SwipeIntent {
+  up = 0,
+  down = 1
+}
+
+export enum SwipeIntentMap {
+  up = 'UP',
+  down = 'DOWN'
+}
+
 export interface SwipeEvent {
-  direction: 'VERTICAL' | 'HORIZONTAL'
-  intent: 1 | 0
-  lastEvent: OriEvent
-  mappedIntent: 'UP' | 'DOWN'
+  direction: SwipeDirection
+  intent: SwipeIntent
+  mappedIntent: SwipeIntentMap
   scrollPending: boolean
+  lastEvent: OriEvent
   startEvent: OriEvent
 }
 
