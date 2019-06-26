@@ -4,17 +4,17 @@ interface OriEvent extends CustomEvent {
   path: HTMLElement[]
 }
 
-export enum SwipeDirection {
+export const enum SwipeDirection {
   vertical = 'VERTICAL',
   horizontal = 'HORIZONTAL'
 }
 
-export enum SwipeIntent {
+export const enum SwipeIntent {
   up = 0,
   down = 1
 }
 
-export enum SwipeIntentMap {
+export const enum SwipeIntentMap {
   up = 'UP',
   down = 'DOWN'
 }
