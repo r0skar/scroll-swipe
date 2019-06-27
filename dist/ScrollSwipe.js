@@ -217,7 +217,9 @@ ScrollSwipe.prototype.initTouch = function initTouch() {
   this.newTouchMove = this.touchMove.bind(this);
   this.newTouchEnd = this.touchEnd.bind(this);
 
-  this.target.addEventListener('touchmove', this.newTouchMove, { passive: true });
+  // Explicitly disable passive event so that we can cancel the touch event at any time.
+  // Doing so enables us the prevent the default pull-to-refresh action.
+  this.target.addEventListener('touchmove', this.newTouchMove, { passive: false });
   this.target.addEventListener('touchend', this.newTouchEnd, false);
 
   return this;
